@@ -338,17 +338,17 @@ namespace Roi.Utilities.Rest
         public void Authenticate(RestSharp.IRestClient restSharpRestClient, RestSharp.IRestRequest restSharpRestRequest)
         {
             var clientTranslator = new RestClientTranslator(restSharpRestClient);
-            var requestTranslator = new RestRequestTranslator(restSharpRestRequest);
+            var requestTranslator = new RestRequestHeaderHelper(restSharpRestRequest);
             RoiAuthenticator.Authenticate(clientTranslator, requestTranslator);
         }
     }
 
-    internal class RestRequestTranslator : IRestRequestTranslator
+    internal class RestRequestHeaderHelper : IRestRequestHeaderHelper
     {
         private RestSharp.IRestRequest RestSharpRestRequest { get; set; }
 
 
-        public RestRequestTranslator(RestSharp.IRestRequest restSharpRestRequest)
+        public RestRequestHeaderHelper(RestSharp.IRestRequest restSharpRestRequest)
         {
             RestSharpRestRequest = restSharpRestRequest;
         }
