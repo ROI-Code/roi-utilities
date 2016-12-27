@@ -1,0 +1,8 @@
+- Compare RoiRestClient
+	- Interfaces
+	- public static DataFormat DataFormat { get; set; }
+	- switch statement to translate
+	- Execute in method signature vs. Internal
+	- GetMany vs. GetManyXML
+	- order of internal guts of classes
+	- 
