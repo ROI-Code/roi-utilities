@@ -8,38 +8,30 @@ namespace Roi.Utilities.Rest
     public class RoiRestClient : IRestClient //TODO: make Get and GetMany methods call into the the same private method
     {
 
-        public static DataFormat DataFormat { get; set; }
+        protected static readonly Dictionary<ResponseFormat, DataFormat> InternalClientFormatTranslator =
+            new Dictionary<ResponseFormat, DataFormat>
+            {
+                {ResponseFormat.Json, DataFormat.Json},
+                {ResponseFormat.Xml, DataFormat.Xml},
+                {ResponseFormat.Csv, DataFormat.Json}
+            };
 
         protected RestClient InternalRestClient { get; }
 
-        public RoiRestClient(string baseUrl, ResponseFormat responseFormat) : this(baseUrl, responseFormat, null)
+        public RoiRestClient(string baseUrl) : this(baseUrl, null)
         {
         }
 
-        public RoiRestClient(string baseUrl, ResponseFormat responseFormat, IAuthenticator authenticator) :
-            this(baseUrl, authenticator, responseFormat, false)
+        public RoiRestClient(string baseUrl, IAuthenticator authenticator) :
+            this(baseUrl, authenticator, false)
         {
 
         }
 
-        public RoiRestClient(string baseUrl, IAuthenticator authenticator, ResponseFormat responseFormat, bool useAdditionalTlsOrSslSecurity)
+        public RoiRestClient(string baseUrl, IAuthenticator authenticator,
+            bool useAdditionalTlsOrSslSecurity)
         {
             InternalRestClient = new RestClient(baseUrl);
-
-            switch (responseFormat)
-            {
-                case ResponseFormat.Json:
-                    DataFormat = DataFormat.Json;
-                    break;
-                case ResponseFormat.Xml:
-                    DataFormat = DataFormat.Xml;
-                    break;
-                case ResponseFormat.Csv:
-                    // TODO: figure out what to do for CSV output format
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(responseFormat), responseFormat, null);
-            }
 
             if (authenticator != null)
             {
@@ -56,21 +48,64 @@ namespace Roi.Utilities.Rest
         }
 
         public RoiRestClientResponse<TReturnedEntity> GetSingle<TReturnedEntity>(
-            string resourceRelativePath) where TReturnedEntity : new()
+            ResponseFormat responseFormat, string resourceRelativePath) 
+            where TReturnedEntity : new()
         {
-            return GetSingleExecute<TReturnedEntity>(resourceRelativePath, null);
+            return GetSingleInternal<TReturnedEntity>(responseFormat, resourceRelativePath, null);
         }
 
         public RoiRestClientResponse<TReturnedEntity> GetSingle<TReturnedEntity>(
-            string resourceRelativePath, string rootElementName) where TReturnedEntity : new()
+            ResponseFormat responseFormat, string resourceRelativePath,
+            string rootElementName) 
+            where TReturnedEntity : new()
         {
-            return GetSingleExecute<TReturnedEntity>(resourceRelativePath, rootElementName);
+            return GetSingleInternal<TReturnedEntity>(responseFormat, resourceRelativePath, rootElementName);
         }
 
-        private RoiRestClientResponse<TReturnedEntity> GetSingleExecute<TReturnedEntity>(
-            string resourceRelativePath, string rootElementName) where TReturnedEntity : new()
+        public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) 
+            where TReturnedEntity : class, new()
         {
-            var request = GetBasicRequest(resourceRelativePath, Method.GET);
+            return GetManyInternal<TReturnedEntity>(resourceRelativePath, null, rootElementName, null);
+        }
+
+        public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryStringParameters, 
+            string rootElementName)
+            where TReturnedEntity : class, new()
+        {
+            return GetManyInternal<TReturnedEntity>(resourceRelativePath, queryStringParameters, rootElementName, null);
+        }
+
+        public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryStringParameters,
+            Func<string, object> deserializeFromHttpResponse)
+            where TReturnedEntity : class, new()
+        {
+            return GetManyInternal<TReturnedEntity>(resourceRelativePath, queryStringParameters, null,
+                deserializeFromHttpResponse);
+        }
+
+        public RoiRestClientResponse<TReturnedEntity> GetManyXml<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) where TReturnedEntity : new()
+        {
+
+            return GetManyXmlInternal<TReturnedEntity>(resourceRelativePath, null, rootElementName);
+        }
+
+        public RoiRestClientResponse<TReturnedEntity> GetManyXml<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryStringParameters, 
+            string rootElementName)
+            where TReturnedEntity : new()
+        {
+            return GetManyXmlInternal<TReturnedEntity>(resourceRelativePath, queryStringParameters, rootElementName);
+        }
+
+        private RoiRestClientResponse<TReturnedEntity> GetSingleInternal<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) 
+            where TReturnedEntity : new()
+        {
+            var request = GetBasicRequest(resourceRelativePath, Method.GET, responseFormat);
 
             if (!string.IsNullOrEmpty(rootElementName))
             {
@@ -95,33 +130,12 @@ namespace Roi.Utilities.Rest
             return restClientResponse;
         }
 
-        public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
-            string resourceRelativePath, string rootElementName) where TReturnedEntity : class, new()
-        {
-
-            return GetManyExecute<TReturnedEntity>(resourceRelativePath, null, rootElementName, null);
-        }
-
-        public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> queryStringParameters, string rootElementName)
-            where TReturnedEntity : class, new()
-        {
-            return GetManyExecute<TReturnedEntity>(resourceRelativePath, queryStringParameters, rootElementName, null);
-        }
-
-        public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> queryStringParameters, Func<string, object> deserializeFromHttpResponse)
-            where TReturnedEntity : class, new()
-        {
-            return GetManyExecute<TReturnedEntity>(resourceRelativePath, queryStringParameters, null, deserializeFromHttpResponse);
-        }
-
-        private RoiRestClientResponse<List<TReturnedEntity>> GetManyExecute<TReturnedEntity>(
+        private RoiRestClientResponse<List<TReturnedEntity>> GetManyInternal<TReturnedEntity>(
             string resourceRelativePath, Dictionary<string, string> queryStringParameters, string rootElementName,
-            Func<string, object> deserializeFromHttpResponse)
+            ResponseFormat responseFormat, Func<string, object> deserializeFromHttpResponse)
             where TReturnedEntity : class, new()
         {
-            var request = GetBasicRequest(resourceRelativePath, Method.GET);
+            var request = GetBasicRequest(resourceRelativePath, Method.GET, responseFormat);
 
             if (!string.IsNullOrEmpty(rootElementName))
             {
@@ -167,25 +181,12 @@ namespace Roi.Utilities.Rest
             return restClientResponse;
         }
 
-        public RoiRestClientResponse<TReturnedEntity> GetManyXml<TReturnedEntity>(
-            string resourceRelativePath, string rootElementName) where TReturnedEntity : new()
-        {
-
-            return GetManyXmlExecute<TReturnedEntity>(resourceRelativePath, null, rootElementName);
-        }
-
-        public RoiRestClientResponse<TReturnedEntity> GetManyXml<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> queryStringParameters, string rootElementName)
+        private RoiRestClientResponse<TReturnedEntity> GetManyXmlInternal<TReturnedEntity>(
+            string resourceRelativePath, Dictionary<string, string> queryStringParameters, string rootElementName,
+            ResponseFormat responseFormat) 
             where TReturnedEntity : new()
         {
-            return GetManyXmlExecute<TReturnedEntity>(resourceRelativePath, queryStringParameters, rootElementName);
-        }
-
-        private RoiRestClientResponse<TReturnedEntity> GetManyXmlExecute<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> queryStringParameters, string rootElementName)
-            where TReturnedEntity : new()
-        {
-            var request = GetBasicRequest(resourceRelativePath, Method.GET);
+            var request = GetBasicRequest(resourceRelativePath, Method.GET, responseFormat);
 
             if (!string.IsNullOrEmpty(rootElementName))
             {
@@ -219,18 +220,58 @@ namespace Roi.Utilities.Rest
         }
 
         public RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
-            string resourceRelativePath, object resourceToCreate, string rootElement)
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string rootElement)
             where TReturnedEntity : class, new()
         {
-            return PostExecute<TReturnedEntity>(resourceRelativePath, resourceToCreate, rootElement);
+            return PostInternal<TReturnedEntity>(resourceRelativePath, resourceToCreate, rootElement);
         }
 
-        private RoiRestClientResponse<TReturnedEntity> PostExecute<TReturnedEntity>(
-            string resourceRelativePath, object resourceToCreate, string rootElement)
+        public RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> postBodyParameters)
+            where TReturnedEntity : class, new()
+        {
+            return PostInternal<TReturnedEntity>(resourceRelativePath, postBodyParameters);
+        }
+
+        private RoiRestClientResponse<TReturnedEntity> PostInternal<TReturnedEntity>(
+            string resourceRelativePath, Dictionary<string, string> postBodyParameters, ResponseFormat responseFormat)
             where TReturnedEntity : class, new()
         {
 
-            var request = GetBasicRequest(resourceRelativePath, Method.POST);
+            var request = GetBasicRequest(resourceRelativePath, Method.POST, responseFormat);
+
+            foreach (var postBodyParameter in postBodyParameters)
+            {
+                request.AddParameter(postBodyParameter.Key, postBodyParameter.Value);
+            }
+
+            var response = InternalRestClient.Execute<TReturnedEntity>(request);
+
+            var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+
+            if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
+            {
+                restClientResponse.Success = false;
+                restClientResponse.ErrorMessage = response.ErrorMessage;
+                restClientResponse.Content = response.Content;
+            }
+            else
+            {
+                restClientResponse.Success = true;
+                restClientResponse.ReturnedObject = response.Data;
+                restClientResponse.Content = response.Content;
+            }
+
+            restClientResponse.HttpStatusCode = (int)response.StatusCode;
+            return restClientResponse;
+        }
+
+        private RoiRestClientResponse<TReturnedEntity> PostInternal<TReturnedEntity>(
+            string resourceRelativePath, object resourceToCreate, string rootElement, ResponseFormat responseFormat)
+            where TReturnedEntity : class, new()
+        {
+
+            var request = GetBasicRequest(resourceRelativePath, Method.POST, responseFormat);
 
             request.AddBody(resourceToCreate);
 
@@ -259,73 +300,46 @@ namespace Roi.Utilities.Rest
             return restClientResponse;
         }
 
-        public RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> postBodyParameters)
-            where TReturnedEntity : class, new()
-        {
-            return PostExecute<TReturnedEntity>(resourceRelativePath, postBodyParameters);
-        }
-
-        private RoiRestClientResponse<TReturnedEntity> PostExecute<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> postBodyParameters)
-            where TReturnedEntity : class, new()
-        {
-
-            var request = GetBasicRequest(resourceRelativePath, Method.POST);
-
-            foreach (var postBodyParameter in postBodyParameters)
-            {
-                request.AddParameter(postBodyParameter.Key, postBodyParameter.Value);
-            }
-
-            var response = InternalRestClient.Execute<TReturnedEntity>(request);
-
-            var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
-
-            if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
-            {
-                restClientResponse.Success = false;
-                restClientResponse.ErrorMessage = response.ErrorMessage;
-                restClientResponse.Content = response.Content;
-            }
-            else
-            {
-                restClientResponse.Success = true;
-                restClientResponse.ReturnedObject = response.Data;
-                restClientResponse.Content = response.Content;
-            }
-
-            restClientResponse.HttpStatusCode = (int)response.StatusCode;
-            return restClientResponse;
-        }
-
-        private static RestRequest GetBasicRequest(string resourceRelativePath, Method httpMethod)
+        private static RestRequest GetBasicRequest(string resourceRelativePath, Method httpMethod,
+            ResponseFormat responseFormat)
         {
             var request = new RestRequest(httpMethod)
             {
                 Resource = resourceRelativePath,
-                RequestFormat = DataFormat
+                RequestFormat = GetDataFormatFrom(responseFormat)
             };
             return request;
 
         }
 
-        private class AuthenticatorTranslator : RestSharp.Authenticators.IAuthenticator
+        private static DataFormat GetDataFormatFrom(ResponseFormat responseFormatToTranslate)
         {
-            private IAuthenticator RoiAuthenticator { get; set; }
-
-            public AuthenticatorTranslator(IAuthenticator roiAuthenticator)
+            if (!InternalClientFormatTranslator.ContainsKey(responseFormatToTranslate))
             {
-                RoiAuthenticator = roiAuthenticator;
+                //TODO: make this string localized, if necessary
+                throw new ArgumentException(
+                    $"RoiRestClient doesn't know about {responseFormatToTranslate}",
+                    nameof(responseFormatToTranslate));
             }
+            return InternalClientFormatTranslator[responseFormatToTranslate];
+        }
+    }
 
-            public void Authenticate(RestSharp.IRestClient restSharpRestClient, RestSharp.IRestRequest restSharpRestRequest)
-            {
-                var clientTranslator = new RestClientTranslator(restSharpRestClient);
-                var requestTranslator = new RestRequestTranslator(restSharpRestRequest);
-                RoiAuthenticator.Authenticate(clientTranslator, requestTranslator);
-            }
-        }     
+    internal class AuthenticatorTranslator : RestSharp.Authenticators.IAuthenticator
+    {
+        private IAuthenticator RoiAuthenticator { get; set; }
+
+        public AuthenticatorTranslator(IAuthenticator roiAuthenticator)
+        {
+            RoiAuthenticator = roiAuthenticator;
+        }
+
+        public void Authenticate(RestSharp.IRestClient restSharpRestClient, RestSharp.IRestRequest restSharpRestRequest)
+        {
+            var clientTranslator = new RestClientTranslator(restSharpRestClient);
+            var requestTranslator = new RestRequestTranslator(restSharpRestRequest);
+            RoiAuthenticator.Authenticate(clientTranslator, requestTranslator);
+        }
     }
 
     internal class RestRequestTranslator : IRestRequestTranslator
