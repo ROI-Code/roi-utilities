@@ -37,16 +37,18 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IAuthenticator.cs" />
-    <Compile Include="IRestClient.cs" />
-    <Compile Include="IRestRequest.cs" />
+    <Compile Include="Implementations\ResponseFormat.cs" />
+    <Compile Include="Interfaces\IAuthenticator.cs" />
+    <Compile Include="Interfaces\IRestClient.cs" />
+    <Compile Include="Interfaces\IRestRequest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RoiRestClient.cs" />
-    <Compile Include="RoiRestClientResponse.cs" />
+    <Compile Include="Implementations\RoiRestClient.cs" />
+    <Compile Include="Implementations\RoiRestClientResponse.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
