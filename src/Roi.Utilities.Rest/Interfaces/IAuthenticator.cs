@@ -2,12 +2,7 @@
 {
     public interface IAuthenticator
     {
-        void Authenticate(IRestClientTranslator client, IRestRequestHeaderHelper request);
-    }
-
-    public interface IRestClientTranslator
-    {
-        
+        void Authenticate(IRestRequestHeaderHelper headerHelper);
     }
 
     public interface IRestRequestHeaderHelper

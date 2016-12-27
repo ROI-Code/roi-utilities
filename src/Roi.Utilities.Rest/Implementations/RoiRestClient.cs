@@ -337,16 +337,14 @@ namespace Roi.Utilities.Rest
 
         public void Authenticate(RestSharp.IRestClient restSharpRestClient, RestSharp.IRestRequest restSharpRestRequest)
         {
-            var clientTranslator = new RestClientTranslator(restSharpRestClient);
             var requestTranslator = new RestRequestHeaderHelper(restSharpRestRequest);
-            RoiAuthenticator.Authenticate(clientTranslator, requestTranslator);
+            RoiAuthenticator.Authenticate(requestTranslator);
         }
     }
 
     internal class RestRequestHeaderHelper : IRestRequestHeaderHelper
     {
-        private RestSharp.IRestRequest RestSharpRestRequest { get; set; }
-
+        private RestSharp.IRestRequest RestSharpRestRequest { get; }
 
         public RestRequestHeaderHelper(RestSharp.IRestRequest restSharpRestRequest)
         {
@@ -356,16 +354,6 @@ namespace Roi.Utilities.Rest
         public void AddHeader(string headerName, string headerValue)
         {
             RestSharpRestRequest.AddHeader(headerName, headerValue);
-        }
-    }
-
-    internal class RestClientTranslator : IRestClientTranslator
-    {
-        private RestSharp.IRestClient RestSharpRestClient { get; set; }
-
-        public RestClientTranslator(RestSharp.IRestClient restSharpRestClient)
-        {
-            RestSharpRestClient = restSharpRestClient;
         }
     }
 }
