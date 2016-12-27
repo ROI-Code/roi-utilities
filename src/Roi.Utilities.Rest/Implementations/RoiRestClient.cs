@@ -66,7 +66,7 @@ namespace Roi.Utilities.Rest
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) 
             where TReturnedEntity : class, new()
         {
-            return GetManyInternal<TReturnedEntity>(resourceRelativePath, null, rootElementName, null);
+            return GetManyInternal<TReturnedEntity>(responseFormat, resourceRelativePath, null, rootElementName, null);
         }
 
         public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
@@ -74,7 +74,7 @@ namespace Roi.Utilities.Rest
             string rootElementName)
             where TReturnedEntity : class, new()
         {
-            return GetManyInternal<TReturnedEntity>(resourceRelativePath, queryStringParameters, rootElementName, null);
+            return GetManyInternal<TReturnedEntity>(responseFormat, resourceRelativePath, queryStringParameters, rootElementName, null);
         }
 
         public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
@@ -82,7 +82,7 @@ namespace Roi.Utilities.Rest
             Func<string, object> deserializeFromHttpResponse)
             where TReturnedEntity : class, new()
         {
-            return GetManyInternal<TReturnedEntity>(resourceRelativePath, queryStringParameters, null,
+            return GetManyInternal<TReturnedEntity>(responseFormat, resourceRelativePath, queryStringParameters, null,
                 deserializeFromHttpResponse);
         }
 
@@ -90,7 +90,7 @@ namespace Roi.Utilities.Rest
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) where TReturnedEntity : new()
         {
 
-            return GetManyXmlInternal<TReturnedEntity>(resourceRelativePath, null, rootElementName);
+            return GetManyXmlInternal<TReturnedEntity>(responseFormat, resourceRelativePath, null, rootElementName);
         }
 
         public RoiRestClientResponse<TReturnedEntity> GetManyXml<TReturnedEntity>(
@@ -98,14 +98,14 @@ namespace Roi.Utilities.Rest
             string rootElementName)
             where TReturnedEntity : new()
         {
-            return GetManyXmlInternal<TReturnedEntity>(resourceRelativePath, queryStringParameters, rootElementName);
+            return GetManyXmlInternal<TReturnedEntity>(responseFormat, resourceRelativePath, queryStringParameters, rootElementName);
         }
 
         private RoiRestClientResponse<TReturnedEntity> GetSingleInternal<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) 
             where TReturnedEntity : new()
         {
-            var request = GetBasicRequest(resourceRelativePath, Method.GET, responseFormat);
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.GET);
 
             if (!string.IsNullOrEmpty(rootElementName))
             {
@@ -131,11 +131,12 @@ namespace Roi.Utilities.Rest
         }
 
         private RoiRestClientResponse<List<TReturnedEntity>> GetManyInternal<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> queryStringParameters, string rootElementName,
-            ResponseFormat responseFormat, Func<string, object> deserializeFromHttpResponse)
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryStringParameters, 
+            string rootElementName,
+            Func<string, object> deserializeFromHttpResponse)
             where TReturnedEntity : class, new()
         {
-            var request = GetBasicRequest(resourceRelativePath, Method.GET, responseFormat);
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.GET);
 
             if (!string.IsNullOrEmpty(rootElementName))
             {
@@ -182,11 +183,12 @@ namespace Roi.Utilities.Rest
         }
 
         private RoiRestClientResponse<TReturnedEntity> GetManyXmlInternal<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> queryStringParameters, string rootElementName,
-            ResponseFormat responseFormat) 
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryStringParameters, 
+            string rootElementName
+            ) 
             where TReturnedEntity : new()
         {
-            var request = GetBasicRequest(resourceRelativePath, Method.GET, responseFormat);
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.GET);
 
             if (!string.IsNullOrEmpty(rootElementName))
             {
@@ -223,22 +225,22 @@ namespace Roi.Utilities.Rest
             ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string rootElement)
             where TReturnedEntity : class, new()
         {
-            return PostInternal<TReturnedEntity>(resourceRelativePath, resourceToCreate, rootElement);
+            return PostInternal<TReturnedEntity>(responseFormat, resourceRelativePath, resourceToCreate, rootElement);
         }
 
         public RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> postBodyParameters)
             where TReturnedEntity : class, new()
         {
-            return PostInternal<TReturnedEntity>(resourceRelativePath, postBodyParameters);
+            return PostInternal<TReturnedEntity>(responseFormat, resourceRelativePath, postBodyParameters);
         }
 
         private RoiRestClientResponse<TReturnedEntity> PostInternal<TReturnedEntity>(
-            string resourceRelativePath, Dictionary<string, string> postBodyParameters, ResponseFormat responseFormat)
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> postBodyParameters)
             where TReturnedEntity : class, new()
         {
 
-            var request = GetBasicRequest(resourceRelativePath, Method.POST, responseFormat);
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.POST);
 
             foreach (var postBodyParameter in postBodyParameters)
             {
@@ -267,11 +269,11 @@ namespace Roi.Utilities.Rest
         }
 
         private RoiRestClientResponse<TReturnedEntity> PostInternal<TReturnedEntity>(
-            string resourceRelativePath, object resourceToCreate, string rootElement, ResponseFormat responseFormat)
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string rootElement)
             where TReturnedEntity : class, new()
         {
 
-            var request = GetBasicRequest(resourceRelativePath, Method.POST, responseFormat);
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.POST);
 
             request.AddBody(resourceToCreate);
 
@@ -300,8 +302,7 @@ namespace Roi.Utilities.Rest
             return restClientResponse;
         }
 
-        private static RestRequest GetBasicRequest(string resourceRelativePath, Method httpMethod,
-            ResponseFormat responseFormat)
+        private static RestRequest GetBasicRequest(ResponseFormat responseFormat, string resourceRelativePath, Method httpMethod)
         {
             var request = new RestRequest(httpMethod)
             {
