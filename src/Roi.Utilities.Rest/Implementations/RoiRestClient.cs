@@ -222,6 +222,13 @@ namespace Roi.Utilities.Rest
         }
 
         public RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate)
+            where TReturnedEntity : class, new()
+        {
+            return PostInternal<TReturnedEntity>(responseFormat, resourceRelativePath, resourceToCreate, null);
+        }
+
+        public RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string rootElement)
             where TReturnedEntity : class, new()
         {

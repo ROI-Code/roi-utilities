@@ -35,6 +35,10 @@ namespace Roi.Utilities.Rest
             where TReturnedEntity : new();
 
         RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate)
+            where TReturnedEntity : class, new();
+
+        RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string rootElement)
             where TReturnedEntity : class, new();
 
