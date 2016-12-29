@@ -293,7 +293,6 @@ namespace Roi.Utilities.Rest
             }
             else
             {
-                restClientResponse.ReturnedObject = response.Data;
                 restClientResponse.Success = true;
                 restClientResponse.ReturnedObject = response.Data;
             }
