@@ -32,6 +32,13 @@ namespace Roi.Utilities.RestSpecs
         }
 
         [Test]
+        public void _020_we_should_be_able_to_get_at_least_one_photo()
+        {
+            var response = RestClientToTest.GetMany<PhotoModel>(ResponseFormat.Json, "photo", "");
+            Assert.That(response.ReturnedObject, Is.Not.Null);
+        }
+
+        [Test]
         [Ignore("Used to clear out the database for the rest service")]
         public void _998_we_should_be_able_to_clear_out_the_data_for_the_rest_service()
         {
