@@ -242,6 +242,57 @@ namespace Roi.Utilities.Rest
             return PostInternal<TReturnedEntity>(responseFormat, resourceRelativePath, postBodyParameters);
         }
 
+        public RoiRestClientResponse<TReturnedEntity> Put<TReturnedEntity>(ResponseFormat responseFormat,
+            string resourceRelativePath,
+            object resourceToCreate) where TReturnedEntity : class, new()
+        {
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.PUT);
+
+            request.AddBody(resourceToCreate);
+
+            var response = InternalRestClient.Execute<TReturnedEntity>(request);
+
+            var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+
+            if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
+            {
+                restClientResponse.Success = false;
+                restClientResponse.ErrorMessage = response.ErrorMessage;
+                restClientResponse.Content = response.Content;
+            }
+            else
+            {
+                restClientResponse.Success = true;
+                restClientResponse.ReturnedObject = response.Data;
+            }
+
+            restClientResponse.HttpStatusCode = (int)response.StatusCode;
+            return restClientResponse;
+        }
+
+        public RoiRestClientResponse Delete(ResponseFormat responseFormat, string resourceRelativePath)
+        {
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.DELETE);
+
+            var response = InternalRestClient.Execute(request);
+
+            var restClientResponse = new RoiRestClientResponse();
+
+            if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
+            {
+                restClientResponse.Success = false;
+                restClientResponse.ErrorMessage = response.ErrorMessage;
+                restClientResponse.Content = response.Content;
+            }
+            else
+            {
+                restClientResponse.Success = true;
+            }
+
+            restClientResponse.HttpStatusCode = (int)response.StatusCode;
+            return restClientResponse;
+        }
+
         private RoiRestClientResponse<TReturnedEntity> PostInternal<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> postBodyParameters)
             where TReturnedEntity : class, new()

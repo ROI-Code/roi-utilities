@@ -45,5 +45,11 @@ namespace Roi.Utilities.Rest
         RoiRestClientResponse<TReturnedEntity> Post<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> postBodyParameters)
             where TReturnedEntity : class, new();
+
+        RoiRestClientResponse<TReturnedEntity> Put<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate)
+            where TReturnedEntity : class, new();
+
+        RoiRestClientResponse Delete(ResponseFormat responseFormat, string resourceRelativePath);
     }
 }

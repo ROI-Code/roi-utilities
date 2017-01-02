@@ -39,10 +39,18 @@ namespace Roi.Utilities.RestSpecs
         }
 
         [Test]
-        [Ignore("Used to clear out the database for the rest service")]
+//        [Ignore("Used to clear out the database for the rest service")]
         public void _998_we_should_be_able_to_clear_out_the_data_for_the_rest_service()
         {
+            var response = RestClientToTest.GetMany<PhotoModel>(ResponseFormat.Json, "photo", "");
+            foreach (var photoModel in response.ReturnedObject)
+            {
+                var deleteResponse = RestClientToTest.Delete(ResponseFormat.Json, $"photo/{photoModel.PhotoId}");
+                Assert.That(deleteResponse.Success, Is.True);
+            }
 
+            var getAllResponse = RestClientToTest.GetMany<PhotoModel>(ResponseFormat.Json, "photo", "");
+            Assert.That(getAllResponse.ReturnedObject.Count, Is.EqualTo(0));
         }
 
         [Test]
