@@ -52,7 +52,26 @@ namespace Roi.Utilities.RestSpecs
             Assert.That(modifiedPhoto.LocationUrl, Is.EqualTo(newLocation));
         }
 
+        [Test]
+        public void _040_we_should_be_able_to_delete_a_photo_after_creating_it()
+        {
+            var newPhoto = GetNew();
+            var response = RestClientToTest.Post<PhotoModel>(ResponseFormat.Json, "photo", newPhoto);
 
+            var photoToMakeSureExists = response.ReturnedObject;
+
+            response = RestClientToTest.GetSingle<PhotoModel>(ResponseFormat.Json, $"photo/{photoToMakeSureExists.PhotoId}");
+
+            var photoToDelete = response.ReturnedObject;
+
+            Assert.That(photoToMakeSureExists.PhotoId, Is.EqualTo(photoToDelete.PhotoId));
+
+            var deleteResonse = RestClientToTest.Delete(ResponseFormat.Json, $"photo/{photoToMakeSureExists.PhotoId}");
+
+            response = RestClientToTest.GetSingle<PhotoModel>(ResponseFormat.Json, $"photo/{photoToMakeSureExists.PhotoId}");
+
+            Assert.That(response.ReturnedObject, Is.EqualTo(null));
+        }
 
         [Test]
         [Ignore("Used to clear out the database for the rest service")]
