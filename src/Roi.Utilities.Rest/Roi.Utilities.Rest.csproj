@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementations\ResponseFormat.cs" />
+    <Compile Include="Implementations\RoiAuthenticator.cs" />
     <Compile Include="Interfaces\IAuthenticator.cs" />
     <Compile Include="Interfaces\IRestClient.cs" />
     <Compile Include="Interfaces\IRestRequest.cs" />
