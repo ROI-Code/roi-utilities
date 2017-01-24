@@ -46,6 +46,10 @@ namespace Roi.Utilities.Rest
             ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> postBodyParameters)
             where TReturnedEntity : class, new();
 
+        RoiRestClientResponse<TReturnedEntity> PostWithFile<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string filePath)
+            where TReturnedEntity : class, new();
+
         RoiRestClientResponse<TReturnedEntity> Put<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate)
             where TReturnedEntity : class, new();
