@@ -51,7 +51,7 @@ namespace Roi.Utilities.Rest
             where TReturnedEntity : class, new();
 
         RoiRestClientResponse<TReturnedEntity> PostWithFile<TReturnedEntity>(
-            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string filePath)
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string filePathParameter, string filePath)
             where TReturnedEntity : class, new();
 
         RoiRestClientResponse<TReturnedEntity> Put<TReturnedEntity>(
