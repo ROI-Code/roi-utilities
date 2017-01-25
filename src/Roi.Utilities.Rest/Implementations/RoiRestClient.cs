@@ -62,6 +62,13 @@ namespace Roi.Utilities.Rest
             return GetSingleInternal<TReturnedEntity>(responseFormat, resourceRelativePath, rootElementName);
         }
 
+        public RoiRestClientResponse<TReturnedEntity> GetSingle<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryParameters)
+            where TReturnedEntity : new()
+        {
+            return GetSingleInternal<TReturnedEntity>(responseFormat, resourceRelativePath, null, queryParameters);
+        }
+
         public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) 
             where TReturnedEntity : class, new()
@@ -102,7 +109,8 @@ namespace Roi.Utilities.Rest
         }
 
         private RoiRestClientResponse<TReturnedEntity> GetSingleInternal<TReturnedEntity>(
-            ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) 
+            ResponseFormat responseFormat, string resourceRelativePath, string rootElementName,
+            Dictionary<string, string> queryStringParameters = null) 
             where TReturnedEntity : new()
         {
             var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.GET);
@@ -110,6 +118,13 @@ namespace Roi.Utilities.Rest
             if (!string.IsNullOrEmpty(rootElementName))
             {
                 request.RootElement = rootElementName;
+            }
+            if (queryStringParameters?.Count > 0)
+            {
+                foreach (var queryStringParameter in queryStringParameters)
+                {
+                    request.AddQueryParameter(queryStringParameter.Key, queryStringParameter.Value);
+                }
             }
             var response = InternalRestClient.Execute<TReturnedEntity>(request);
 

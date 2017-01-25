@@ -12,6 +12,10 @@ namespace Roi.Utilities.Rest
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName)
             where TReturnedEntity : new();
 
+        RoiRestClientResponse<TReturnedEntity> GetSingle<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryParameters)
+            where TReturnedEntity : new();
+
         RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName)
             where TReturnedEntity : class, new();
