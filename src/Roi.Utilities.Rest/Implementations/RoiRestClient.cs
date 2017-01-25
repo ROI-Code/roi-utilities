@@ -382,6 +382,7 @@ namespace Roi.Utilities.Rest
             var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.POST);
             request.AlwaysMultipartFormData = true;
             request.AddFile(fileNameParameter, filePath);
+            request.AddBody(resourceToCreate);
 
             var response = InternalRestClient.Execute<TReturnedEntity>(request);
 
