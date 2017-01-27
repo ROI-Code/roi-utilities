@@ -407,6 +407,38 @@ namespace Roi.Utilities.Rest
             return restClientResponse;
         }
 
+        private RoiRestClientResponse<TReturnedEntity> PutInternalWithFile<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToUpdate, string fileNameParameter, string filePath)
+            where TReturnedEntity : class, new()
+        {
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.PUT);
+            request.AlwaysMultipartFormData = true;
+            request.AddFile(fileNameParameter, filePath);
+            request.AddBody(resourceToUpdate);
+
+            var response = InternalRestClient.Execute<TReturnedEntity>(request);
+
+            var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+
+            if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
+            {
+                restClientResponse.Success = false;
+                restClientResponse.ErrorMessage = response.ErrorMessage;
+                restClientResponse.Content = response.Content;
+            }
+            else
+            {
+                //TODO: Figure out why response.Data does not have validation/operation issues populated
+                //Until then, deserialize it ourselves
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.Success = true;
+                restClientResponse.ReturnedObject = data;
+            }
+
+            restClientResponse.HttpStatusCode = (int)response.StatusCode;
+            return restClientResponse;
+        }
+
 
         private static RestRequest GetBasicRequest(ResponseFormat responseFormat, string resourceRelativePath, Method httpMethod)
         {
@@ -437,7 +469,14 @@ namespace Roi.Utilities.Rest
         {
             return PostInternalWithFile<TReturnedEntity>(responseFormat, resourceRelativePath, resourceToCreate, filePathParameter, filePath);
         }
-}
+
+        public RoiRestClientResponse<TReturnedEntity> PutWithFile<TReturnedEntity>(ResponseFormat responseFormat,
+            string resourceRelativePath, object resourceToCreate, string filePathParameter, string filePath)
+            where TReturnedEntity : class, new()
+        {
+            return PutInternalWithFile<TReturnedEntity>(responseFormat, resourceRelativePath, resourceToCreate, filePathParameter, filePath);
+        }
+    }
 
     internal class AuthenticatorTranslator : RestSharp.Authenticators.IAuthenticator
     {

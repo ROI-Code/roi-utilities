@@ -58,6 +58,10 @@ namespace Roi.Utilities.Rest
             ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate)
             where TReturnedEntity : class, new();
 
+        RoiRestClientResponse<TReturnedEntity> PutWithFile<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string filePathParameter, string filePath)
+            where TReturnedEntity : class, new();
+
         RoiRestClientResponse Delete(ResponseFormat responseFormat, string resourceRelativePath);
     }
 }
