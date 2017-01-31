@@ -12,6 +12,10 @@ namespace Roi.Utilities.Rest
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName)
             where TReturnedEntity : new();
 
+        RoiRestClientResponse<TReturnedEntity> GetSingle<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryParameters)
+            where TReturnedEntity : new();
+
         RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName)
             where TReturnedEntity : class, new();
@@ -46,8 +50,20 @@ namespace Roi.Utilities.Rest
             ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> postBodyParameters)
             where TReturnedEntity : class, new();
 
+        RoiRestClientResponse<TReturnedEntity> PostWithFile<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string filePathParameter, string filePath)
+            where TReturnedEntity : class, new();
+
+        RoiRestClientResponse<TReturnedEntity> PostWithFiles<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, Dictionary<string, string> fileDefinitions)
+            where TReturnedEntity : class, new();
+
         RoiRestClientResponse<TReturnedEntity> Put<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate)
+            where TReturnedEntity : class, new();
+
+        RoiRestClientResponse<TReturnedEntity> PutWithFile<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string filePathParameter, string filePath)
             where TReturnedEntity : class, new();
 
         RoiRestClientResponse Delete(ResponseFormat responseFormat, string resourceRelativePath);

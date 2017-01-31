@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using RestSharp;
+using Newtonsoft.Json;
 
 namespace Roi.Utilities.Rest
 {
@@ -62,6 +63,13 @@ namespace Roi.Utilities.Rest
             return GetSingleInternal<TReturnedEntity>(responseFormat, resourceRelativePath, rootElementName);
         }
 
+        public RoiRestClientResponse<TReturnedEntity> GetSingle<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, Dictionary<string, string> queryParameters)
+            where TReturnedEntity : new()
+        {
+            return GetSingleInternal<TReturnedEntity>(responseFormat, resourceRelativePath, null, queryParameters);
+        }
+
         public RoiRestClientResponse<List<TReturnedEntity>> GetMany<TReturnedEntity>(
             ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) 
             where TReturnedEntity : class, new()
@@ -102,7 +110,8 @@ namespace Roi.Utilities.Rest
         }
 
         private RoiRestClientResponse<TReturnedEntity> GetSingleInternal<TReturnedEntity>(
-            ResponseFormat responseFormat, string resourceRelativePath, string rootElementName) 
+            ResponseFormat responseFormat, string resourceRelativePath, string rootElementName,
+            Dictionary<string, string> queryStringParameters = null) 
             where TReturnedEntity : new()
         {
             var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.GET);
@@ -110,6 +119,13 @@ namespace Roi.Utilities.Rest
             if (!string.IsNullOrEmpty(rootElementName))
             {
                 request.RootElement = rootElementName;
+            }
+            if (queryStringParameters?.Count > 0)
+            {
+                foreach (var queryStringParameter in queryStringParameters)
+                {
+                    request.AddQueryParameter(queryStringParameter.Key, queryStringParameter.Value);
+                }
             }
             var response = InternalRestClient.Execute<TReturnedEntity>(request);
 
@@ -359,12 +375,113 @@ namespace Roi.Utilities.Rest
             return restClientResponse;
         }
 
+        private RoiRestClientResponse<TReturnedEntity> PostInternalWithFile<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, string fileNameParameter, string filePath)
+            where TReturnedEntity : class, new()
+        {
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.POST);
+            request.AlwaysMultipartFormData = true;
+            request.AddFile(fileNameParameter, filePath);
+            request.AddBody(resourceToCreate);
+
+            var response = InternalRestClient.Execute<TReturnedEntity>(request);
+
+            var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+
+            if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
+            {
+                restClientResponse.Success = false;
+                restClientResponse.ErrorMessage = response.ErrorMessage;
+                restClientResponse.Content = response.Content;
+            }
+            else
+            {
+                //TODO: Figure out why response.Data does not have validation/operation issues populated
+                //Until then, deserialize it ourselves
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.Success = true;
+                restClientResponse.ReturnedObject = data;
+            }
+
+            restClientResponse.HttpStatusCode = (int)response.StatusCode;
+            return restClientResponse;
+        }
+
+        private RoiRestClientResponse<TReturnedEntity> PostInternalWithFiles<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, Dictionary<string, string> fileDefinitions)
+            where TReturnedEntity : class, new()
+        {
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.POST);
+            request.AlwaysMultipartFormData = true;
+
+            foreach(var fileDefinition in fileDefinitions)
+            {
+                request.AddFile(fileDefinition.Key, fileDefinition.Value);
+            }
+            request.AddBody(resourceToCreate);
+
+            var response = InternalRestClient.Execute<TReturnedEntity>(request);
+
+            var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+
+            if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
+            {
+                restClientResponse.Success = false;
+                restClientResponse.ErrorMessage = response.ErrorMessage;
+                restClientResponse.Content = response.Content;
+            }
+            else
+            {
+                //TODO: Figure out why response.Data does not have validation/operation issues populated
+                //Until then, deserialize it ourselves
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.Success = true;
+                restClientResponse.ReturnedObject = data;
+            }
+
+            restClientResponse.HttpStatusCode = (int)response.StatusCode;
+            return restClientResponse;
+        }
+
+        private RoiRestClientResponse<TReturnedEntity> PutInternalWithFile<TReturnedEntity>(
+            ResponseFormat responseFormat, string resourceRelativePath, object resourceToUpdate, string fileNameParameter, string filePath)
+            where TReturnedEntity : class, new()
+        {
+            var request = GetBasicRequest(responseFormat, resourceRelativePath, Method.PUT);
+            request.AlwaysMultipartFormData = true;
+            request.AddFile(fileNameParameter, filePath);
+            request.AddBody(resourceToUpdate);
+
+            var response = InternalRestClient.Execute<TReturnedEntity>(request);
+
+            var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+
+            if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
+            {
+                restClientResponse.Success = false;
+                restClientResponse.ErrorMessage = response.ErrorMessage;
+                restClientResponse.Content = response.Content;
+            }
+            else
+            {
+                //TODO: Figure out why response.Data does not have validation/operation issues populated
+                //Until then, deserialize it ourselves
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.Success = true;
+                restClientResponse.ReturnedObject = data;
+            }
+
+            restClientResponse.HttpStatusCode = (int)response.StatusCode;
+            return restClientResponse;
+        }
+
+
         private static RestRequest GetBasicRequest(ResponseFormat responseFormat, string resourceRelativePath, Method httpMethod)
         {
             var request = new RestRequest(httpMethod)
             {
                 Resource = resourceRelativePath,
-                RequestFormat = GetDataFormatFrom(responseFormat)
+                RequestFormat = GetDataFormatFrom(responseFormat),
             };
             return request;
 
@@ -380,6 +497,25 @@ namespace Roi.Utilities.Rest
                     nameof(responseFormatToTranslate));
             }
             return InternalClientFormatTranslator[responseFormatToTranslate];
+        }
+
+        public RoiRestClientResponse<TReturnedEntity> PostWithFile<TReturnedEntity>(ResponseFormat responseFormat,
+            string resourceRelativePath, object resourceToCreate, string filePathParameter, string filePath)
+            where TReturnedEntity : class, new()
+        {
+            return PostInternalWithFile<TReturnedEntity>(responseFormat, resourceRelativePath, resourceToCreate, filePathParameter, filePath);
+        }
+
+        public RoiRestClientResponse<TReturnedEntity> PutWithFile<TReturnedEntity>(ResponseFormat responseFormat,
+            string resourceRelativePath, object resourceToCreate, string filePathParameter, string filePath)
+            where TReturnedEntity : class, new()
+        {
+            return PutInternalWithFile<TReturnedEntity>(responseFormat, resourceRelativePath, resourceToCreate, filePathParameter, filePath);
+        }
+
+        public RoiRestClientResponse<TReturnedEntity> PostWithFiles<TReturnedEntity>(ResponseFormat responseFormat, string resourceRelativePath, object resourceToCreate, Dictionary<string, string> fileDefinitions) where TReturnedEntity : class, new()
+        {
+            return PostInternalWithFiles<TReturnedEntity>(responseFormat, resourceRelativePath, resourceToCreate, fileDefinitions);
         }
     }
 
