@@ -140,7 +140,10 @@ namespace Roi.Utilities.Rest
             else
             {
                 restClientResponse.Success = true;
-                restClientResponse.ReturnedObject = response.Data;
+                //TODO: Figure out why response.Data does not have validation/operation issues populated
+                //Until then, deserialize it ourselves
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.ReturnedObject = data;
             }
             restClientResponse.HttpStatusCode = (int)response.StatusCode;
             return restClientResponse;
@@ -191,7 +194,10 @@ namespace Roi.Utilities.Rest
             }
             else
             {
-                restClientResponse.ReturnedObject = response.Data;
+                //TODO: Figure out why response.Data does not have validation/operation issues populated
+                //Until then, deserialize it ourselves
+                List<TReturnedEntity> data = JsonConvert.DeserializeObject<List<TReturnedEntity>>(response.Content);
+                restClientResponse.ReturnedObject = data;
             }
 
             restClientResponse.HttpStatusCode = (int)response.StatusCode;
@@ -231,7 +237,8 @@ namespace Roi.Utilities.Rest
             else
             {
                 restClientResponse.Success = true;
-                restClientResponse.ReturnedObject = response.Data;
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.ReturnedObject = data;
             }
             restClientResponse.HttpStatusCode = (int)response.StatusCode;
             return restClientResponse;
@@ -279,7 +286,8 @@ namespace Roi.Utilities.Rest
             else
             {
                 restClientResponse.Success = true;
-                restClientResponse.ReturnedObject = response.Data;
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.ReturnedObject = data;
             }
 
             restClientResponse.HttpStatusCode = (int)response.StatusCode;
@@ -334,7 +342,9 @@ namespace Roi.Utilities.Rest
             else
             {
                 restClientResponse.Success = true;
-                restClientResponse.ReturnedObject = response.Data;
+                //TODO: Figure out why response.Data does not have validation/operation issues populated
+                //Until then, deserialize it ourselves
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
                 restClientResponse.Content = response.Content;
             }
 
@@ -368,7 +378,10 @@ namespace Roi.Utilities.Rest
             else
             {
                 restClientResponse.Success = true;
-                restClientResponse.ReturnedObject = response.Data;
+                //TODO: Figure out why response.Data does not have validation/operation issues populated
+                //Until then, deserialize it ourselves
+                TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.ReturnedObject = data;
             }
 
             restClientResponse.HttpStatusCode = (int)response.StatusCode;
