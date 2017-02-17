@@ -1,19 +1,21 @@
 ﻿namespace Roi.Utilities.Rest.Implementations
 {
-    public class BearerTokenHeaderAuthenticator : IAuthenticator
+    public class TokenHeaderAuthenticator : IAuthenticator
     {
         private string _bearerToken;
         private string _headerName;
+        private string _tokenName;
 
-        public BearerTokenHeaderAuthenticator(string headerName, string bearerToken)
+        public TokenHeaderAuthenticator(string tokenName, string headerName, string bearerToken)
         {
             _bearerToken = bearerToken;
             _headerName = headerName;
+            _tokenName = tokenName;
         }
 
         public void Authenticate(IRestRequestHeaderHelper headerHelper)
         {
-            headerHelper.AddHeader(_headerName, $"Bearer {_bearerToken}");
+            headerHelper.AddHeader(_headerName, $"{_tokenName} {_bearerToken}");
         }
     }
 }
