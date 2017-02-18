@@ -332,6 +332,7 @@ namespace Roi.Utilities.Rest
             var response = InternalRestClient.Execute<TReturnedEntity>(request);
 
             var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+            restClientResponse.Content = response.Content;
 
             if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
             {
@@ -345,7 +346,8 @@ namespace Roi.Utilities.Rest
                 //TODO: Figure out why response.Data does not have validation/operation issues populated
                 //Until then, deserialize it ourselves
                 TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
-                restClientResponse.Content = response.Content;
+                restClientResponse.Success = true;
+                restClientResponse.ReturnedObject = data;
             }
 
             restClientResponse.HttpStatusCode = (int)response.StatusCode;
@@ -368,6 +370,7 @@ namespace Roi.Utilities.Rest
             var response = InternalRestClient.Execute<TReturnedEntity>(request);
 
             var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+            restClientResponse.Content = response.Content;
 
             if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
             {
@@ -381,6 +384,7 @@ namespace Roi.Utilities.Rest
                 //TODO: Figure out why response.Data does not have validation/operation issues populated
                 //Until then, deserialize it ourselves
                 TReturnedEntity data = JsonConvert.DeserializeObject<TReturnedEntity>(response.Content);
+                restClientResponse.Success = true;
                 restClientResponse.ReturnedObject = data;
             }
 
@@ -400,6 +404,7 @@ namespace Roi.Utilities.Rest
             var response = InternalRestClient.Execute<TReturnedEntity>(request);
 
             var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+            restClientResponse.Content = response.Content;
 
             if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
             {
@@ -436,6 +441,7 @@ namespace Roi.Utilities.Rest
             var response = InternalRestClient.Execute<TReturnedEntity>(request);
 
             var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+            restClientResponse.Content = response.Content;
 
             if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
             {
@@ -468,6 +474,7 @@ namespace Roi.Utilities.Rest
             var response = InternalRestClient.Execute<TReturnedEntity>(request);
 
             var restClientResponse = new RoiRestClientResponse<TReturnedEntity>();
+            restClientResponse.Content = response.Content;
 
             if (response.ResponseStatus == ResponseStatus.Error) //TODO: what about other status enums?
             {
